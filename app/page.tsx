@@ -85,7 +85,7 @@ export default function HomePage() {
           href="/login" 
           className="group flex items-center gap-2 text-gray-900 hover:text-yellow-900 transition-colors"
         >
-          <span className="text-[10px] uppercase tracking-[0.4em] font-black">Management Access</span>
+          <span className="text-[10px] uppercase tracking-[0.4em] font-black">Logowanie pracownika</span>
           <div className="h-1 w-1 bg-gray-900 group-hover:bg-yellow-900 rounded-full"></div>
         </Link>
       </footer>
