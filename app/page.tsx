@@ -35,7 +35,7 @@ export default function HomePage() {
         <div className="bg-gray-800/40 p-10 rounded-3xl border border-gray-700/50">
           <h2 className="text-3xl font-bold mb-6 text-blue-400">Kontakt</h2>
           <div className="space-y-4">
-            <p className="text-xl"><span className="text-gray-500 uppercase text-xs block">Adres:</span> ul. Sportowa 15, Miasto</p>
+            <p className="text-xl"><span className="text-gray-500 uppercase text-xs block">Adres:</span> ul. Sportowa 15, Liberty City</p>
             <p className="text-xl"><span className="text-gray-500 uppercase text-xs block">Telefon:</span> +48 123 456 789</p>
             <p className="text-xl"><span className="text-gray-500 uppercase text-xs block">Godziny:</span> Codziennie 12:00 - 23:00</p>
           </div>
