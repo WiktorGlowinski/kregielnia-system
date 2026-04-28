@@ -67,7 +67,7 @@ export default function HomePage() {
         <p className="text-3xl md:text-4xl font-light italic text-gray-500 max-w-4xl mx-auto leading-relaxed">
           „Kręgle to nasze życie. Zapraszamy wszystkich, którzy wiedzą, co to dobra zabawa.”
         </p>
-        <p className="mt-8 text-yellow-500 font-black tracking-widest uppercase">— Unc Jeff</p>
+        <p className="mt-8 text-yellow-500 font-black tracking-widest uppercase">— Jan Kręglarz</p>
       </section>
 
       {/* 4. FOOTER - Wejście dla ekipy */}
