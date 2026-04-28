@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 export default function BookingWizard() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [bookedLaneIds, setBookedLaneIds] = useState<number[]>([]);
+  const [bookedLanesInfo, setBookedLanesInfo] = useState<any[]>([]); // Zmienione: przechowujemy pełne info o rezerwacjach
+  const [shoeInventory, setShoeInventory] = useState<any[]>([]);
   const router = useRouter();
   
   const [lanes, setLanes] = useState<any[]>([]);
@@ -30,34 +31,36 @@ export default function BookingWizard() {
     const fetchData = async () => {
       const { data: laneData } = await supabase.from('lanes').select('*').order('number');
       if (laneData) setLanes(laneData);
-      const { data: shoeData } = await supabase.from('shoe_inventory').select('price_per_rental').limit(1).single();
-      if (shoeData) setShoePrice(Number(shoeData.price_per_rental));
+
+      const { data: shoeData } = await supabase.from('shoe_inventory').select('*');
+      if (shoeData) {
+        setShoeInventory(shoeData);
+        setShoePrice(Number(shoeData[0]?.price_per_rental || 5));
+      }
     };
     fetchData();
   }, []);
 
-  // --- LOGIKA CZASU ZEGAROWEGO (Z) ---
   const formatDateTime = (date: string, time: string, addHours = 0) => {
     const [h, m] = time.split(':');
     let hour = parseInt(h) + addHours;
     return `${date}T${hour.toString().padStart(2, '0')}:${m}:00Z`;
   };
 
+  // --- POPRAWIONE SPRAWDZANIE (POBIERA CAŁY DZIEŃ) ---
   const checkAvailability = async () => {
     setLoading(true);
     try {
-      const startISO = formatDateTime(booking.date, booking.startTime);
-      const endISO = formatDateTime(booking.date, booking.startTime, booking.duration);
-
+      // Pobieramy wszystkie potwierdzone rezerwacje na wybrany dzień
       const { data, error } = await supabase
         .from('bookings')
-        .select('lane_id')
+        .select('lane_id, start_time, end_time')
         .eq('status', 'confirmed')
-        .lt('start_time', endISO)
-        .gt('end_time', startISO);
+        .gte('start_time', `${booking.date}T00:00:00Z`)
+        .lte('start_time', `${booking.date}T23:59:59Z`);
 
       if (error) throw error;
-      setBookedLaneIds(data?.map(b => b.lane_id) || []);
+      setBookedLanesInfo(data || []);
       setStep(2);
     } catch (err: any) {
       alert("Błąd: " + err.message);
@@ -75,11 +78,9 @@ export default function BookingWizard() {
   const totalShoes = Object.values(booking.shoes).reduce((a, b) => a + b, 0);
   const grandTotal = (booking.duration * (booking.selectedLane?.price_per_hour || 0)) + (totalShoes * shoePrice);
 
-  // --- NOWA LOGIKA WALIDACJI (DANE KLIENTA) ---
   const isFormValid = () => {
     const nameRegex = /^[a-zA-ZĄąĆćĘęŁłŃńÓóŚśŹźŻż\s]+$/;
     const phoneRegex = /^[0-9]{9}$/;
-
     return (
       nameRegex.test(booking.firstName.trim()) &&
       nameRegex.test(booking.lastName.trim()) &&
@@ -112,9 +113,19 @@ export default function BookingWizard() {
 
       const shoeEntries = Object.entries(booking.shoes)
         .filter(([_, qty]) => qty > 0)
-        .map(([size, qty]) => ({ booking_id: newBooking.id, quantity: qty }));
+        .map(([size, qty]) => {
+          const invItem = shoeInventory.find(item => Number(item.size) === Number(size));
+          return {
+            booking_id: newBooking.id,
+            shoe_id: invItem?.id,
+            quantity: qty
+          };
+        });
 
-      if (shoeEntries.length > 0) await supabase.from('shoe_rentals').insert(shoeEntries);
+      if (shoeEntries.length > 0) {
+        const { error: shoeError } = await supabase.from('shoe_rentals').insert(shoeEntries);
+        if (shoeError) throw shoeError;
+      }
 
       alert(`Sukces! Zarezerwowano tor #${booking.selectedLane.number}`);
       router.push('/');
@@ -127,7 +138,7 @@ export default function BookingWizard() {
 
   return (
     <main className="min-h-screen bg-[#050505] text-white p-4 font-sans text-center">
-      <div className="max-w-3xl mx-auto border border-gray-900 rounded-[40px] p-8 bg-gray-900/10 backdrop-blur-md">
+      <div className="max-w-3xl mx-auto border border-gray-900 rounded-[40px] p-8 bg-gray-900/10 backdrop-blur-md text-center">
         
         {/* HEADER */}
         <div className="flex justify-between items-start mb-10 text-left">
@@ -168,24 +179,53 @@ export default function BookingWizard() {
         {step === 2 && (
           <div className="space-y-6">
             <h2 className="text-3xl font-bold italic uppercase">Wybierz tor</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 text-center">
               {lanes.map(lane => {
-                const isBooked = bookedLaneIds.includes(lane.id);
+                // Wybieramy wszystkie rezerwacje dla tego konkretnego toru
+                const laneReservations = bookedLanesInfo.filter(b => b.lane_id === lane.id);
+                
+                // Sprawdzamy, czy wybrany przez klienta czas koliduje z którąś rezerwacją
+                const startISO = formatDateTime(booking.date, booking.startTime);
+                const endISO = formatDateTime(booking.date, booking.startTime, booking.duration);
+                
+                const isBooked = laneReservations.some(b => 
+                  new Date(b.start_time) < new Date(endISO) && 
+                  new Date(b.end_time) > new Date(startISO)
+                );
+
                 return (
-                  <button key={lane.id} disabled={isBooked} onClick={() => setBooking({...booking, laneId: lane.id, selectedLane: lane})} className={`p-6 rounded-[32px] border-2 text-left transition-all relative overflow-hidden ${isBooked ? 'border-red-900/30 bg-red-900/5 opacity-40 cursor-not-allowed' : booking.laneId === lane.id ? 'border-yellow-500 bg-yellow-500/10' : 'border-gray-800 bg-black/40 hover:border-yellow-500/50'}`}>
-                    <span className="text-3xl font-black block tracking-tighter">#{lane.number}</span>
-                    <div className="mt-2 space-y-1">
-                      <p className="text-[10px] uppercase font-bold text-gray-500">{lane.max_people} os. max</p>
+                  <button key={lane.id} disabled={isBooked} onClick={() => setBooking({...booking, laneId: lane.id, selectedLane: lane})} className={`p-6 rounded-[32px] border-2 text-left transition-all relative overflow-hidden flex flex-col ${isBooked ? 'border-red-900/30 bg-red-900/5 opacity-60 cursor-not-allowed' : booking.laneId === lane.id ? 'border-yellow-500 bg-yellow-500/10' : 'border-gray-800 bg-black/40 hover:border-yellow-500/50'}`}>
+                    <div className="flex justify-between items-start w-full">
+                      <span className="text-3xl font-black block tracking-tighter">#{lane.number}</span>
                       <p className="text-sm font-bold text-green-500">{lane.price_per_hour} PLN/h</p>
                     </div>
-                    {isBooked && <div className="absolute inset-0 flex items-center justify-center bg-black/40"><span className="bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase">Zajęty</span></div>}
+                    
+                    {/* LISTA ZAJĘTYCH GODZIN */}
+                    <div className="mt-4 space-y-1">
+                      <p className="text-[9px] uppercase font-bold text-gray-500 tracking-widest">Zajęte dzisiaj:</p>
+                      {laneReservations.length > 0 ? (
+                        laneReservations.map((res, i) => (
+                          <p key={i} className="text-[10px] font-mono text-gray-400">
+                            {res.start_time.substring(11, 16)} - {res.end_time.substring(11, 16)}
+                          </p>
+                        ))
+                      ) : (
+                        <p className="text-[10px] font-mono text-green-700 uppercase">Cały dzień wolny</p>
+                      )}
+                    </div>
+
+                    {isBooked && (
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-red-600 text-white text-[8px] font-black px-2 py-1 rounded-full uppercase">Zajęty teraz</span>
+                      </div>
+                    )}
                   </button>
                 );
               })}
             </div>
             <div className="flex gap-4">
               <button onClick={() => setStep(1)} className="w-1/3 border border-gray-800 py-6 rounded-3xl font-bold uppercase text-xs">Cofnij</button>
-              <button onClick={() => setStep(3)} disabled={!booking.laneId} className="w-2/3 bg-yellow-600 py-6 rounded-3xl font-black uppercase tracking-widest hover:bg-yellow-500 transition-all">Dalej</button>
+              <button onClick={() => setStep(3)} disabled={!booking.laneId} className="w-2/3 bg-yellow-600 py-6 rounded-3xl font-black uppercase tracking-widest">Dalej</button>
             </div>
           </div>
         )}
@@ -238,7 +278,7 @@ export default function BookingWizard() {
                 <div key={field}>
                   <label className="text-[10px] text-gray-500 uppercase font-black ml-4 mb-1 block tracking-widest">{['Imię', 'Nazwisko', 'Telefon'][idx]}</label>
                   <input 
-                    placeholder={idx === 2 ? "9 cyfr (bez spacji)" : ""}
+                    placeholder={idx === 2 ? "9 cyfr (bez spacji)" : "Tylko litery"}
                     className="w-full bg-black/40 border border-gray-800 p-6 rounded-2xl outline-none focus:border-yellow-500 text-white transition-all" 
                     value={(booking as any)[field]} 
                     onChange={e => setBooking({...booking, [field]: e.target.value})} 
@@ -246,20 +286,18 @@ export default function BookingWizard() {
                 </div>
               ))}
             </div>
-
             <button 
               onClick={handlePayment} 
               disabled={loading || !isFormValid()} 
               className={`w-full py-8 rounded-[32px] font-black uppercase text-xl transition-all shadow-2xl ${
                 loading || !isFormValid() 
                 ? 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50' 
-                : 'bg-green-600 text-white hover:bg-green-500 hover:scale-[1.01] active:scale-95 shadow-green-900/30'
+                : 'bg-green-600 text-white hover:bg-green-500 active:scale-95 shadow-green-900/30'
               }`}
             >
               {loading ? 'Zapisywanie...' : `ZAPŁAĆ ${grandTotal} PLN`}
             </button>
-            
-            <button onClick={() => setStep(3)} className="w-full text-gray-700 text-[10px] font-black uppercase py-2 hover:text-gray-400 transition-all text-center">Cofnij do butów</button>
+            <button onClick={() => setStep(3)} className="w-full text-gray-700 text-[10px] font-black uppercase py-2 text-center">Cofnij do butów</button>
           </div>
         )}
       </div>
