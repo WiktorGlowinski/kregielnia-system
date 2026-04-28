@@ -19,8 +19,8 @@ export default function HomePage() {
         </p>
         
         <p className="text-lg md:text-xl text-gray-400 max-w-2xl font-light mb-12 px-6 italic">
-          „Cousin! It's your lucky day!” – Profesjonalne tory, zimne napoje i klimat, 
-          który sprawi, że zapomnisz o kłopotach z policją Liberty City.
+          Profesjonalne tory, zimne napoje i klimat, 
+          który sprawi, że zapomnisz o kłopotach w Liberty City.
         </p>
         
         <Link href="/rezerwacja" className="group relative">
@@ -45,7 +45,6 @@ export default function HomePage() {
         <div className="bg-gray-900/30 p-10 rounded-[40px] border border-gray-800/50 backdrop-blur-sm group hover:border-yellow-500/50 transition-colors">
           <h3 className="text-xs font-black text-yellow-500 uppercase tracking-[0.3em] mb-4 text-center md:text-left">Zadzwoń do nas</h3>
           <p className="text-3xl font-black text-center md:text-left">+48 555 010 042</p>
-          <p className="text-sm text-gray-500 mt-2 text-center md:text-left italic">Pytaj o Romana</p>
         </div>
 
         {/* Godziny otwarcia */}
@@ -66,9 +65,9 @@ export default function HomePage() {
       {/* 3. QUOTE SECTION - Klimat Romana */}
       <section className="py-20 text-center px-6">
         <p className="text-3xl md:text-4xl font-light italic text-gray-500 max-w-4xl mx-auto leading-relaxed">
-          „Pieniądze, kręgle i kuzynostwo – to nasze życie. Zapraszamy wszystkich, którzy wiedzą, co to dobra zabawa.”
+          „Kręgle to nasze życie. Zapraszamy wszystkich, którzy wiedzą, co to dobra zabawa.”
         </p>
-        <p className="mt-8 text-yellow-500 font-black tracking-widest uppercase">— Roman Bellic</p>
+        <p className="mt-8 text-yellow-500 font-black tracking-widest uppercase">— Unc Jeff</p>
       </section>
 
       {/* 4. FOOTER - Wejście dla ekipy */}
