@@ -290,7 +290,7 @@ export default function BookingWizard() {
             </div>
             <div className="space-y-2">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">GOTOWE!</h2>
-              <p className="text-gray-400 text-sm">Potwierdzenie wysłaliśmy na: <strong>{booking.email}</strong></p>
+              <p className="text-gray-400 text-sm">Potwierdzenie zostało wysłane na: <strong>{booking.email}</strong></p>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-3xl p-6 text-left space-y-3">
               <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Tor</span><span className="font-black">#{booking.selectedLane.number}</span></div>
