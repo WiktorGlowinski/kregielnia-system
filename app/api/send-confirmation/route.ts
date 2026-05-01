@@ -1,33 +1,42 @@
-import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Wymuszenie trybu dynamicznego, żeby Vercel nie wywalał błędu przy budowaniu
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
     const { email, firstName, date, startTime, laneNumber, totalPrice } = await req.json();
 
-    const data = await resend.emails.send({
-      from: 'Bowling Alley <onboarding@resend.dev>', // Jak kupisz domenę, zmienisz to na swoją
-      to: [email],
-      subject: `Potwierdzenie rezerwacji - Tor #${laneNumber}`,
+    // 1. Sprawdzenie, czy klucz w ogóle istnieje
+    if (!process.env.RESEND_API_KEY) {
+      console.error("Błąd: Brak RESEND_API_KEY w środowisku.");
+      return NextResponse.json({ error: "Błąd konfiguracji maili po stronie serwera" }, { status: 500 });
+    }
+
+    // 2. Inicjalizacja Resend DOPIERO wewnątrz funkcji POST
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    // 3. Wysyłka maila
+    await resend.emails.send({
+      from: 'Niko & Roman Bowling <onboarding@resend.dev>', // Tu możesz podać swoją domenę
+      to: email,
+      subject: `Potwierdzenie rezerwacji - N&R Bowling`,
       html: `
-        <div style="font-family: sans-serif; background: #050505; color: white; padding: 40px; border-radius: 20px;">
-          <h1 style="color: #eab308; italic: true;">SIEMA ${firstName.toUpperCase()}!</h1>
-          <p>Twoja kula jest już gotowa! Potwierdziliśmy rezerwację.</p>
-          <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px solid #333;">
-            <p><strong>Tor:</strong> #${laneNumber}</p>
-            <p><strong>Data:</strong> ${date}</p>
-            <p><strong>Godzina:</strong> ${startTime}</p>
-            <p><strong>Kwota:</strong> ${totalPrice} PLN</p>
-          </div>
-          <p style="margin-top: 20px; font-size: 12px; color: #666;">Prosimy o przybycie 10 minut przed czasem.</p>
-        </div>
+        <h2>Siema ${firstName}!</h2>
+        <p>Twoja rezerwacja toru została potwierdzona i opłacona.</p>
+        <ul>
+          <li><strong>Data:</strong> ${date}</li>
+          <li><strong>Godzina:</strong> ${startTime}</li>
+          <li><strong>Tor:</strong> #${laneNumber}</li>
+          <li><strong>Kwota:</strong> ${totalPrice} PLN</li>
+        </ul>
+        <p>Do zobaczenia na torze!<br>Jan Kręglarz</p>
       `,
     });
 
-    return NextResponse.json({ success: true, data });
-  } catch (error) {
-    return NextResponse.json({ success: false, error }, { status: 500 });
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
