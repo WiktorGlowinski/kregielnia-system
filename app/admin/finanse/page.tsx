@@ -16,14 +16,14 @@ export default function AdminFinance() {
 
   const fetchFinanceData = async () => {
     setLoading(true);
-    // Pobieramy potwierdzone rezerwacje wraz z wynajmem butów
-    const { data: bookings, error } = await supabase
+    // KLUCZOWA ZMIANA: Pobieramy TYLKO opłacone rezerwacje
+    const { data: bookings } = await supabase
       .from('bookings')
       .select(`
         *,
         shoe_rentals(quantity, shoe_id, shoe_inventory(price_per_rental))
       `)
-      .eq('status', 'confirmed')
+      .eq('payment_status', 'paid')
       .order('created_at', { ascending: false });
 
     if (bookings) {
@@ -74,33 +74,31 @@ export default function AdminFinance() {
   return (
     <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in duration-700">
       <div className="flex justify-between items-end">
-        <h2 className="text-5xl font-black italic uppercase tracking-tighter">Finanse i Raporty</h2>
-        <button onClick={fetchFinanceData} className="text-[10px] font-black uppercase bg-white/5 px-6 py-2 rounded-full hover:bg-white/10 transition-all text-gray-400 border border-white/5">Odśwież raport</button>
+        <h2 className="text-5xl font-black italic uppercase tracking-tighter">Raporty Finansowe</h2>
+        <button onClick={fetchFinanceData} className="text-[10px] font-black uppercase bg-white/5 px-6 py-2 rounded-full hover:bg-white/10 text-gray-400 border border-white/5">Odśwież raport</button>
       </div>
 
-      {/* KPI CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-left">
         <div className="bg-white/5 border border-white/5 p-8 rounded-[32px] backdrop-blur-md">
-          <p className="text-[10px] uppercase font-black text-gray-500 tracking-widest mb-2 text-left">Łączny Przychód</p>
-          <p className="text-4xl font-black text-green-500 tracking-tighter text-left">{stats.total} <span className="text-sm">PLN</span></p>
+          <p className="text-[10px] uppercase font-black text-gray-500 tracking-widest mb-2">Łączny Przychód</p>
+          <p className="text-4xl font-black text-green-500 tracking-tighter">{stats.total} <span className="text-sm">PLN</span></p>
         </div>
-        <div className="bg-white/5 border border-white/5 p-8 rounded-[32px] backdrop-blur-md text-left">
+        <div className="bg-white/5 border border-white/5 p-8 rounded-[32px] backdrop-blur-md">
           <p className="text-[10px] uppercase font-black text-gray-500 tracking-widest mb-2">Zysk z Torów</p>
           <p className="text-3xl font-black text-white tracking-tighter">{stats.lanes} <span className="text-sm">PLN</span></p>
         </div>
-        <div className="bg-white/5 border border-white/5 p-8 rounded-[32px] backdrop-blur-md text-left">
+        <div className="bg-white/5 border border-white/5 p-8 rounded-[32px] backdrop-blur-md">
           <p className="text-[10px] uppercase font-black text-gray-500 tracking-widest mb-2">Zysk z Butów</p>
           <p className="text-3xl font-black text-yellow-500 tracking-tighter">{stats.shoes} <span className="text-sm">PLN</span></p>
         </div>
-        <div className="bg-white/5 border border-white/5 p-8 rounded-[32px] backdrop-blur-md text-left">
-          <p className="text-[10px] uppercase font-black text-gray-500 tracking-widest mb-2">Liczba Rezerwacji</p>
+        <div className="bg-white/5 border border-white/5 p-8 rounded-[32px] backdrop-blur-md">
+          <p className="text-[10px] uppercase font-black text-gray-500 tracking-widest mb-2">Liczba Opłaconych</p>
           <p className="text-3xl font-black text-blue-500 tracking-tighter">{stats.count}</p>
         </div>
       </div>
 
-      {/* OSTATNIE WPŁATY */}
-      <div className="space-y-6">
-        <h3 className="text-xl font-black uppercase italic text-gray-500 tracking-widest text-left">Ostatnie Wpływy</h3>
+      <div className="space-y-6 text-left">
+        <h3 className="text-xl font-black uppercase italic text-gray-500 tracking-widest">Historia Transakcji</h3>
         <div className="bg-white/5 border border-white/5 rounded-[40px] overflow-hidden">
           <table className="w-full text-left">
             <thead>
@@ -130,7 +128,7 @@ export default function AdminFinance() {
               })}
             </tbody>
           </table>
-          {history.length === 0 && <p className="p-10 text-center text-gray-600 uppercase font-black text-[10px] italic">Brak zarejestrowanych przychodów</p>}
+          {history.length === 0 && <p className="p-10 text-center text-gray-600 uppercase font-black text-[10px] italic">Brak realnych wpływów</p>}
         </div>
       </div>
     </div>

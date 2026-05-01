@@ -26,7 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex">
-      <aside className="w-72 border-r border-gray-900 p-8 flex flex-col gap-10 sticky top-0 h-screen">
+      <aside className="w-72 border-r border-gray-900 p-8 flex flex-col gap-10 sticky top-0 h-screen overflow-y-auto">
         <div>
           <h1 className="text-2xl font-black italic text-yellow-500 uppercase tracking-tighter">N&R Management</h1>
           <div className="mt-4 p-3 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3">
@@ -44,7 +44,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           
           {role === 'boss' && (
             <>
-              {/* NOWA ZAKŁADKA FINANSE */}
+              <Link href="/admin/tory" className={`p-4 rounded-2xl font-black uppercase text-[11px] tracking-widest transition-all ${pathname === '/admin/tory' ? 'bg-yellow-600 text-black shadow-lg shadow-yellow-600/20' : 'text-gray-500 hover:bg-white/5'}`}>
+                🎳 Tory
+              </Link>
+              <Link href="/admin/kody" className={`p-4 rounded-2xl font-black uppercase text-[11px] tracking-widest transition-all ${pathname === '/admin/kody' ? 'bg-yellow-600 text-black shadow-lg shadow-yellow-600/20' : 'text-gray-500 hover:bg-white/5'}`}>
+                🎟️ Kody Rabatowe
+              </Link>
+              <Link href="/admin/klienci" className={`p-4 rounded-2xl font-black uppercase text-[11px] tracking-widest transition-all ${pathname === '/admin/klienci' ? 'bg-yellow-600 text-black shadow-lg shadow-yellow-600/20' : 'text-gray-500 hover:bg-white/5'}`}>
+                👥 Klienci i CRM
+              </Link>
               <Link href="/admin/finanse" className={`p-4 rounded-2xl font-black uppercase text-[11px] tracking-widest transition-all ${pathname === '/admin/finanse' ? 'bg-yellow-600 text-black shadow-lg shadow-yellow-600/20' : 'text-gray-500 hover:bg-white/5'}`}>
                 💰 Finanse
               </Link>
@@ -63,7 +71,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </button>
       </aside>
 
-      <main className="flex-1 p-12 bg-[radial-gradient(circle_at_top_right,_#111,_#050505)]">
+      <main className="flex-1 p-12 bg-[radial-gradient(circle_at_top_right,_#111,_#050505)] overflow-y-auto">
         {children}
       </main>
     </div>
