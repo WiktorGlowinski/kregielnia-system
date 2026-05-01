@@ -32,12 +32,10 @@ export default function BookingWizard() {
     promoCode: ''
   });
 
-  // Dynamiczne wyliczenie: czy wybrane godziny mieszczą się w czasie pracy (do 23:00)
   const startHour = parseInt(booking.startTime.split(':')[0]);
   const isTimeValid = startHour + booking.duration <= 23;
   const maxAllowedDuration = 23 - startHour;
 
-  // Korekta stanu w locie: jeśli duration jest za duże, zbijamy je do maksymalnego dopuszczalnego
   useEffect(() => {
     if (booking.duration > maxAllowedDuration) {
       setBooking(prev => ({
@@ -238,7 +236,7 @@ export default function BookingWizard() {
       if (stripeData.url) {
         window.location.href = stripeData.url;
       } else {
-        alert("Błąd tworzenia płatności");
+        alert("Błąd płatności: " + (stripeData.error || "Nieznany błąd"));
       }
 
     } catch (err: any) {
@@ -305,14 +303,12 @@ export default function BookingWizard() {
               </div>
             </div>
 
-            {/* Wizualny komunikat błędu */}
             {!isTimeValid && (
               <p className="text-red-500 text-xs font-bold text-center animate-pulse">
                 ⚠️ Wybrany czas gry wykracza poza godziny otwarcia (zamykamy o 23:00)!
               </p>
             )}
 
-            {/* Przycisk blokuje się, gdy czas jest niepoprawny */}
             <button 
               onClick={checkAvailability} 
               disabled={loading || !isTimeValid} 
@@ -337,14 +333,55 @@ export default function BookingWizard() {
                 const startISO = formatDateTime(booking.date, booking.startTime);
                 const endISO = formatDateTime(booking.date, booking.startTime, booking.duration);
                 const isBooked = laneRes.some(b => new Date(b.start_time) < new Date(endISO) && new Date(b.end_time) > new Date(startISO));
+
+                // Ekstrakcja już zajętych godzin dla tego toru
+                const occupiedHours = laneRes.map(b => {
+                  const s = b.start_time.substring(11, 16);
+                  const e = b.end_time.substring(11, 16);
+                  return `${s}-${e}`;
+                }).sort().join(', ');
+
                 return (
-                  <button key={lane.id} disabled={isBooked} onClick={() => setBooking({...booking, laneId: lane.id, selectedLane: lane})} className={`p-6 rounded-[32px] border-2 text-left transition-all relative overflow-hidden flex flex-col ${isBooked ? 'border-red-900/30 bg-red-900/5 opacity-60 cursor-not-allowed' : booking.laneId === lane.id ? 'border-yellow-500 bg-yellow-500/10' : 'border-gray-800 bg-black/40 hover:border-yellow-500/50'}`}>
+                  <button 
+                    key={lane.id} 
+                    disabled={isBooked} 
+                    onClick={() => setBooking({...booking, laneId: lane.id, selectedLane: lane})} 
+                    className={`p-6 rounded-[32px] border-2 text-left transition-all relative overflow-hidden flex flex-col justify-between h-auto min-h-[140px] ${
+                      isBooked 
+                        ? 'border-red-900/30 bg-red-900/5 opacity-60 cursor-not-allowed' 
+                        : booking.laneId === lane.id 
+                          ? 'border-yellow-500 bg-yellow-500/10' 
+                          : 'border-gray-800 bg-black/40 hover:border-yellow-500/50'
+                    }`}
+                  >
                     <div className="flex justify-between items-start w-full">
                       <div className="flex flex-col gap-1 text-left">
                         <span className="text-3xl font-black block tracking-tighter">#{lane.number}</span>
-                        {lane.has_bumpers && <span className="text-[9px] bg-blue-600/20 text-blue-400 font-black px-2 py-0.5 rounded-full uppercase tracking-tighter w-fit border border-blue-400/30 text-center">👶 Dla dzieci</span>}
+                        {lane.has_bumpers && (
+                          <span className="text-[9px] bg-blue-600/20 text-blue-400 font-black px-2 py-0.5 rounded-full uppercase tracking-tighter w-fit border border-blue-400/30 text-center">
+                            👶 Dla dzieci
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm font-bold text-green-500">{lane.price_per_hour} zł/h</p>
+                    </div>
+
+                    {/* Godziny zajętości */}
+                    <div className="mt-4 border-t border-white/5 pt-2">
+                      {occupiedHours ? (
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                          Zajęte: <span className="text-yellow-600/80 font-mono">{occupiedHours}</span>
+                        </p>
+                      ) : (
+                        <p className="text-[10px] text-green-500/60 font-bold uppercase tracking-widest">
+                          ✓ Wolny cały dzień
+                        </p>
+                      )}
+                      {isBooked && (
+                        <p className="text-[10px] text-red-500 font-black uppercase mt-1">
+                          ⚠️ Niedostępny w Twoich godzinach
+                        </p>
+                      )}
                     </div>
                   </button>
                 );
