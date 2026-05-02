@@ -96,12 +96,14 @@ export default function BookingWizard() {
 
     setLoading(true);
     try {
+      // POPRAWKA: Pobieramy tylko rezerwacje, które zostały OPŁACONE
       const { data, error } = await supabase
         .from('bookings')
         .select('lane_id, start_time, end_time')
-        .eq('status', 'confirmed')
+        .eq('payment_status', 'paid')
         .gte('start_time', `${booking.date}T00:00:00Z`)
         .lte('start_time', `${booking.date}T23:59:59Z`);
+        
       if (error) throw error;
       setBookedLanesInfo(data || []);
       setStep(2);
