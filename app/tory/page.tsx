@@ -17,10 +17,10 @@ export default function LanesPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white font-sans flex flex-col">
+    <main className="min-h-screen bg-transparent text-white font-sans flex flex-col">
       
       {/* 1. HERO SECTION */}
-      <section className="relative min-h-[65vh] flex flex-col items-center justify-center text-center px-4 bg-gradient-to-b from-yellow-900/20 to-[#050505] border-b border-gray-900 pt-28 md:pt-0">
+      <section className="relative min-h-[65vh] flex flex-col items-center justify-center text-center px-4 pt-28 md:pt-0">
         
         {/* LOGO I MENU */}
         <div className="absolute top-0 left-0 w-full px-4 md:px-10 py-4 md:py-8 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-6 z-20 select-none">
@@ -55,14 +55,14 @@ export default function LanesPage() {
       </section>
 
       {/* 2. GRID Z CAŁĄ LISTĄ TORÓW */}
-      <section className="max-w-7xl mx-auto px-6 py-16 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full">
+      <section className="max-w-7xl mx-auto px-6 py-16 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full z-10">
         {loading ? (
           <p className="text-yellow-500 text-center py-10 font-bold uppercase text-xl tracking-widest animate-pulse col-span-full">
             Ładowanie cennika...
           </p>
         ) : (
           lanes.map((lane) => (
-            <div key={lane.id} className="bg-gray-900/30 p-8 md:p-10 rounded-[40px] border border-gray-800/50 backdrop-blur-sm group hover:border-yellow-500/50 transition-colors flex flex-col justify-between min-h-[380px]">
+            <div key={lane.id} className="bg-gray-900/20 p-8 md:p-10 rounded-[40px] border border-gray-800/40 backdrop-blur-md group hover:border-yellow-500/50 transition-colors flex flex-col justify-between min-h-[380px]">
               <div>
                 <div className="flex justify-between items-start mb-4 gap-2">
                   <div className="flex flex-col gap-2">
@@ -114,7 +114,7 @@ export default function LanesPage() {
       </section>
 
       {/* 3. FOOTER */}
-      <footer className="mt-auto border-t border-gray-900 py-12 px-10 flex flex-col md:flex-row justify-between items-center bg-black/80 gap-6 md:gap-0">
+      <footer className="mt-auto border-t border-gray-900/80 py-12 px-10 flex flex-col md:flex-row justify-between items-center bg-black/60 backdrop-blur-sm gap-6 md:gap-0 z-10">
         <div className="flex items-center gap-4">
           <div className="h-8 w-8 bg-yellow-600 rounded-lg flex items-center justify-center font-black text-black">N</div>
           <p className="text-gray-600 text-xs tracking-widest uppercase font-bold">

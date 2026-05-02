@@ -3,10 +3,10 @@ import Link from 'next/link';
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-[#050505] text-white font-sans flex flex-col">
+    <main className="min-h-screen bg-transparent text-white font-sans flex flex-col">
       
       {/* 1. HERO SECTION */}
-      <section className="relative min-h-[65vh] flex flex-col items-center justify-center text-center px-4 bg-gradient-to-b from-yellow-900/20 to-[#050505] border-b border-gray-900 pt-28 md:pt-0">
+      <section className="relative min-h-[65vh] flex flex-col items-center justify-center text-center px-4 pt-28 md:pt-0">
         
         {/* LOGO I MENU */}
         <div className="absolute top-0 left-0 w-full px-4 md:px-10 py-4 md:py-8 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-6 z-20 select-none">
@@ -41,15 +41,15 @@ export default function AboutPage() {
       </section>
 
       {/* 2. INFO SECTION */}
-      <section className="max-w-7xl mx-auto px-6 py-16 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full">
-        <div className="bg-gray-900/30 p-8 md:p-10 rounded-[40px] border border-gray-800/50 backdrop-blur-sm group hover:border-yellow-500/50 transition-colors">
+      <section className="max-w-7xl mx-auto px-6 py-16 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full z-10">
+        <div className="bg-gray-900/20 p-8 md:p-10 rounded-[40px] border border-gray-800/40 backdrop-blur-md group hover:border-yellow-500/50 transition-colors">
           <h3 className="text-xs font-black text-yellow-500 uppercase tracking-[0.3em] mb-4 text-center md:text-left">Jak to się zaczęło</h3>
           <p className="text-base md:text-xl font-light text-gray-300 leading-relaxed italic md:text-left text-center">
             Wszystko zaczęło się od marzenia o biznesie, który pozwoli nam zapomnieć o trudach codziennego życia w Liberty City. Roman zawsze powtarzał, że kręgle to świetny sposób na relaks – i miał rację.
           </p>
         </div>
 
-        <div className="bg-gray-900/30 p-8 md:p-10 rounded-[40px] border border-gray-800/50 backdrop-blur-sm group hover:border-yellow-500/50 transition-colors">
+        <div className="bg-gray-900/20 p-8 md:p-10 rounded-[40px] border border-gray-800/40 backdrop-blur-md group hover:border-yellow-500/50 transition-colors">
           <h3 className="text-xs font-black text-yellow-500 uppercase tracking-[0.3em] mb-4 text-center md:text-left">Nasza misja dzisiaj</h3>
           <p className="text-base md:text-xl font-light text-gray-300 leading-relaxed italic md:text-left text-center">
             Dziś oferujemy Wam profesjonalne tory, zimne napoje i unikalny klimat, w którym każdy poczuje się jak część naszej ekipy. Nieważne czy rzucasz pierwsze kule, czy grasz od lat – u nas liczy się tylko dobra zabawa.
@@ -58,7 +58,7 @@ export default function AboutPage() {
       </section>
 
       {/* 3. QUOTE SECTION */}
-      <section className="py-12 md:py-20 text-center px-6">
+      <section className="py-12 md:py-20 text-center px-6 z-10">
         <p className="text-xl md:text-4xl font-light italic text-gray-500 max-w-4xl mx-auto leading-relaxed">
           „Cousin, let's go bowling!” — ten prosty tekst stał się naszą największą inspiracją.
         </p>
@@ -66,7 +66,7 @@ export default function AboutPage() {
       </section>
 
       {/* 4. FOOTER */}
-      <footer className="mt-auto border-t border-gray-900 py-12 px-10 flex flex-col md:flex-row justify-between items-center bg-black/80 gap-6 md:gap-0">
+      <footer className="mt-auto border-t border-gray-900/80 py-12 px-10 flex flex-col md:flex-row justify-between items-center bg-black/60 backdrop-blur-sm gap-6 md:gap-0 z-10">
         <div className="flex items-center gap-4">
           <div className="h-8 w-8 bg-yellow-600 rounded-lg flex items-center justify-center font-black text-black">N</div>
           <p className="text-gray-600 text-xs tracking-widest uppercase font-bold">

@@ -3,10 +3,10 @@ import Link from 'next/link';
 
 export default function LocationPage() {
   return (
-    <main className="min-h-screen bg-[#050505] text-white font-sans flex flex-col">
+    <main className="min-h-screen bg-transparent text-white font-sans flex flex-col">
       
       {/* 1. HERO SECTION */}
-      <section className="relative min-h-[65vh] flex flex-col items-center justify-center text-center px-4 bg-gradient-to-b from-yellow-900/20 to-[#050505] border-b border-gray-900 pt-28 md:pt-0">
+      <section className="relative min-h-[65vh] flex flex-col items-center justify-center text-center px-4 pt-28 md:pt-0">
         
         {/* LOGO I MENU */}
         <div className="absolute top-0 left-0 w-full px-4 md:px-10 py-4 md:py-8 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-6 z-20 select-none">
@@ -41,10 +41,10 @@ export default function LocationPage() {
       </section>
 
       {/* 2. ADRES I MAPKA W TYCH SAMYCH KARTACH */}
-      <section className="max-w-7xl mx-auto px-6 py-16 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full">
+      <section className="max-w-7xl mx-auto px-6 py-16 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full z-10">
         
         {/* Adres i dojazd */}
-        <div className="bg-gray-900/30 p-8 md:p-10 rounded-[40px] border border-gray-800/50 backdrop-blur-sm group hover:border-yellow-500/50 transition-colors flex flex-col justify-between min-h-[300px]">
+        <div className="bg-gray-900/20 p-8 md:p-10 rounded-[40px] border border-gray-800/40 backdrop-blur-md group hover:border-yellow-500/50 transition-colors flex flex-col justify-between min-h-[300px]">
           <div>
             <h3 className="text-xs font-black text-yellow-500 uppercase tracking-[0.3em] mb-4 text-center md:text-left">Nasz adres</h3>
             <p className="text-2xl md:text-3xl font-bold italic text-center md:text-left mb-2">ul. Gdańska 58</p>
@@ -57,7 +57,7 @@ export default function LocationPage() {
         </div>
 
         {/* Mapka */}
-        <div className="bg-gray-900/30 p-4 rounded-[40px] border border-gray-800/50 backdrop-blur-sm group hover:border-yellow-500/50 transition-colors flex items-center justify-center min-h-[350px]">
+        <div className="bg-gray-900/20 p-4 rounded-[40px] border border-gray-800/40 backdrop-blur-md group hover:border-yellow-500/50 transition-colors flex items-center justify-center min-h-[350px]">
           <iframe 
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2394.577189196395!2d18.006323677328956!3d53.1182442918861!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470313cfc3bb83ff%3A0xc3b7cb7d93d9be55!2zR2RhxYRza2EgNTgsIDg1LTAwMyBCeWRnb3N6Y3osIFBvbHNrYQ!5e0!3m2!1spl!2spl!4v1714412345678!5m2!1spl!2spl"
             className="w-full h-full rounded-[32px] border-0 min-h-[300px]" 
@@ -71,7 +71,7 @@ export default function LocationPage() {
       </section>
 
       {/* 3. FOOTER */}
-      <footer className="mt-auto border-t border-gray-900 py-12 px-10 flex flex-col md:flex-row justify-between items-center bg-black/80 gap-6 md:gap-0">
+      <footer className="mt-auto border-t border-gray-900/80 py-12 px-10 flex flex-col md:flex-row justify-between items-center bg-black/60 backdrop-blur-sm gap-6 md:gap-0 z-10">
         <div className="flex items-center gap-4">
           <div className="h-8 w-8 bg-yellow-600 rounded-lg flex items-center justify-center font-black text-black">N</div>
           <p className="text-gray-600 text-xs tracking-widest uppercase font-bold">
