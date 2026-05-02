@@ -1,19 +1,18 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-export const dynamic = 'force-dynamic';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2025-01-27' as any,
+});
 
 export async function POST(req: Request) {
   try {
     const { bookingId, customerName, totalPrice, email } = await req.json();
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      console.error("Błąd: Brak klucza STRIPE_SECRET_KEY na Vercelu");
-      return NextResponse.json({ error: "Brak klucza STRIPE_SECRET_KEY w konfiguracji Vercela." }, { status: 500 });
-    }
-
-    // Inicjalizacja bez podawania apiVersion – Stripe sam dobierze odpowiednią wersję!
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    // DYNAMICZNIE POBIERAMY ADRES TWOJEJ STRONY
+    const host = req.headers.get('host');
+    const protocol = host?.includes('localhost') ? 'http' : 'https';
+    const origin = `${protocol}://${host}`;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'blik', 'p24'],
@@ -23,8 +22,7 @@ export async function POST(req: Request) {
           price_data: {
             currency: 'pln',
             product_data: {
-              name: `Rezerwacja Toru - N&R Management`,
-              description: `Dla: ${customerName}`,
+              name: `Rezerwacja toru - ${customerName}`,
             },
             unit_amount: Math.round(totalPrice * 100),
           },
@@ -32,17 +30,16 @@ export async function POST(req: Request) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/rezerwacja?success=true&bookingId=${bookingId}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/rezerwacja?canceled=true`,
+      // DZIĘKI TEMU STRIPE WRÓCI NA VERCELA, A NIE NA LOCALHOSTA
+      success_url: `${origin}/rezerwacja?success=true&bookingId=${bookingId}`,
+      cancel_url: `${origin}/rezerwacja?canceled=true`,
       metadata: {
-        bookingId: bookingId,
+        bookingId: bookingId.toString(),
       },
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (error: any) {
-    console.error("Stripe error:", error.message);
-    // Zwracamy DOKŁADNY błąd z biblioteki Stripe do frontendu
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
