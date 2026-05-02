@@ -7,12 +7,35 @@ export default function HomePage() {
       
       {/* 1. HERO SECTION - Wielki wjazd */}
       <section className="relative h-[85vh] flex flex-col items-center justify-center text-center px-4 bg-gradient-to-b from-yellow-900/20 to-[#050505] border-b border-gray-900">
-        <div className="absolute top-10 left-10 opacity-30 hidden md:block">
-          <p className="text-[10px] tracking-[0.6em] uppercase font-black text-yellow-500">Liberty City / Broker Area</p>
+        
+        {/* LOGO W LEWYM GÓRNYM ROGU */}
+        <div className="absolute top-8 left-10 z-20">
+          <Link href="/" className="text-xl font-black italic tracking-tighter uppercase hover:opacity-80 transition-opacity select-none">
+            NIKO & ROMAN <span className="text-yellow-500">BOWLING</span>
+          </Link>
         </div>
 
-        <h1 className="text-6xl md:text-9xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 via-yellow-200 to-yellow-600 mb-2 tracking-tighter">
-          NIKO & ROMAN
+        {/* 5 ZAKŁADEK NAWIGACYJNYCH - Strona główna podświetlona */}
+        <div className="absolute top-8 right-10 flex gap-6 z-20">
+          <Link href="/" className="text-[10px] text-yellow-500 uppercase font-black tracking-widest transition-colors">
+            Strona główna
+          </Link>
+          <Link href="/o-nas" className="text-[10px] text-gray-400 hover:text-yellow-500 uppercase font-black tracking-widest transition-colors">
+            O nas
+          </Link>
+          <Link href="/tory" className="text-[10px] text-gray-400 hover:text-yellow-500 uppercase font-black tracking-widest transition-colors">
+            Opis torów
+          </Link>
+          <Link href="/lokalizacja" className="text-[10px] text-gray-400 hover:text-yellow-500 uppercase font-black tracking-widest transition-colors">
+            Lokalizacja
+          </Link>
+          <Link href="/kontakt" className="text-[10px] text-gray-400 hover:text-yellow-500 uppercase font-black tracking-widest transition-colors">
+            Kontakt
+          </Link>
+        </div>
+
+        <h1 className="text-6xl md:text-9xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 via-yellow-200 to-yellow-600 mb-2 tracking-tighter uppercase pr-12 overflow-visible select-none">
+          NIKO & ROMAN{" "}
         </h1>
         <p className="text-2xl md:text-4xl font-bold mb-10 tracking-[0.4em] uppercase italic text-white/90">
           Bowling <span className="text-yellow-500">&</span> Fun
@@ -70,7 +93,7 @@ export default function HomePage() {
         <p className="mt-8 text-yellow-500 font-black tracking-widest uppercase">— Jan Kręglarz</p>
       </section>
 
-      {/* 4. FOOTER - Wejście dla ekipy */}
+      {/* 4. FOOTER */}
       <footer className="mt-auto border-t border-gray-900 py-12 px-10 flex flex-col md:flex-row justify-between items-center bg-black/80">
         <div className="flex items-center gap-4 mb-6 md:mb-0">
           <div className="h-8 w-8 bg-yellow-600 rounded-lg flex items-center justify-center font-black text-black">N</div>
