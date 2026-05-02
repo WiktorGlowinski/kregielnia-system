@@ -208,19 +208,6 @@ export default function BookingWizard() {
 
       if (shoeEntries.length > 0) await supabase.from('shoe_rentals').insert(shoeEntries);
 
-      await fetch('/api/send-confirmation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: booking.email,
-          firstName: booking.firstName,
-          date: booking.date,
-          startTime: booking.startTime,
-          laneNumber: booking.selectedLane.number,
-          totalPrice: grandTotal
-        }),
-      });
-
       const stripeRes = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -305,7 +292,7 @@ export default function BookingWizard() {
 
             {!isTimeValid && (
               <p className="text-red-500 text-xs font-bold text-center animate-pulse">
-                ⚠️ Wybrany czas gry wykracza poza godziny otwarcia (zamykamy o 23:00)!
+                ⚠️ Przepraszamy, kręgielnia jest czynna tylko do 23:00!
               </p>
             )}
 
@@ -334,7 +321,6 @@ export default function BookingWizard() {
                 const endISO = formatDateTime(booking.date, booking.startTime, booking.duration);
                 const isBooked = laneRes.some(b => new Date(b.start_time) < new Date(endISO) && new Date(b.end_time) > new Date(startISO));
 
-                // Ekstrakcja już zajętych godzin dla tego toru
                 const occupiedHours = laneRes.map(b => {
                   const s = b.start_time.substring(11, 16);
                   const e = b.end_time.substring(11, 16);
@@ -366,7 +352,6 @@ export default function BookingWizard() {
                       <p className="text-sm font-bold text-green-500">{lane.price_per_hour} zł/h</p>
                     </div>
 
-                    {/* Godziny zajętości */}
                     <div className="mt-4 border-t border-white/5 pt-2">
                       {occupiedHours ? (
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
@@ -473,7 +458,7 @@ export default function BookingWizard() {
             </div>
             <div className="space-y-2">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">MAMY TO!</h2>
-              <p className="text-gray-400 text-sm">Twoja rezerwacja została opłacona. Potwierdzenie na: <strong>{booking.email}</strong></p>
+              <p className="text-gray-400 text-sm">Twoja rezerwacja została pomyślnie opłacona. Potwierdzenie wysłaliśmy na: <strong>{booking.email}</strong></p>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-3xl p-6 text-left space-y-3">
               <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Tor</span><span className="font-black">#{booking.selectedLane.number}</span></div>

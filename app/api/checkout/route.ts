@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-01-27' as any,
-});
+// Usuwamy apiVersion, żeby Stripe użył domyślnej wersji Twojego konta
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 
 export async function POST(req: Request) {
   try {
     const { bookingId, customerName, totalPrice, email } = await req.json();
 
-    // DYNAMICZNIE POBIERAMY ADRES TWOJEJ STRONY
     const host = req.headers.get('host');
     const protocol = host?.includes('localhost') ? 'http' : 'https';
     const origin = `${protocol}://${host}`;
@@ -30,7 +28,6 @@ export async function POST(req: Request) {
         },
       ],
       mode: 'payment',
-      // DZIĘKI TEMU STRIPE WRÓCI NA VERCELA, A NIE NA LOCALHOSTA
       success_url: `${origin}/rezerwacja?success=true&bookingId=${bookingId}`,
       cancel_url: `${origin}/rezerwacja?canceled=true`,
       metadata: {
