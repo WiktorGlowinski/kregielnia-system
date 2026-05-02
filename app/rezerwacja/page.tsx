@@ -51,6 +51,7 @@ export default function BookingWizard() {
       if (urlParams.get('success') === 'true') {
         const bId = urlParams.get('bookingId');
         if (bId) {
+          // Pobieramy dane z bookings na sukcesie - to zadziała, bo użytkownik ma ID rezerwacji
           const { data } = await supabase.from('bookings').select('*, lanes(number)').eq('id', bId).single();
           if (data) {
             setBooking(prev => ({
@@ -96,11 +97,10 @@ export default function BookingWizard() {
 
     setLoading(true);
     try {
-      // POPRAWKA: Pobieramy tylko rezerwacje, które zostały OPŁACONE
+      // POPRAWKA: Pobieramy rezerwacje z widoku 'occupied_lanes', a nie z tabeli 'bookings'
       const { data, error } = await supabase
-        .from('bookings')
+        .from('occupied_lanes')
         .select('lane_id, start_time, end_time')
-        .eq('payment_status', 'paid')
         .gte('start_time', `${booking.date}T00:00:00Z`)
         .lte('start_time', `${booking.date}T23:59:59Z`);
         
