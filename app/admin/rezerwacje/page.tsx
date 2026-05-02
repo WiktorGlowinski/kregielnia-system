@@ -126,7 +126,7 @@ export default function AdminBookings() {
     <div className="space-y-10 animate-in fade-in duration-700">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-5xl font-black italic uppercase tracking-tighter text-white">Rezerwacje</h2>
+          <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white">Rezerwacje</h2>
           <p className="text-xs text-gray-500 font-bold uppercase mt-1">
             Tryb: <span className="text-yellow-500">{role === 'boss' ? 'Szef (Pełna Władza)' : 'Pracownik (Obsługa)'}</span>
           </p>
@@ -134,7 +134,8 @@ export default function AdminBookings() {
         <button onClick={fetchData} className="text-[10px] font-black uppercase bg-white/5 px-6 py-2 rounded-full hover:bg-white/10 transition-all text-gray-400 border border-white/5">Odśwież</button>
       </div>
 
-      <div className="bg-white/5 border border-white/5 rounded-[32px] overflow-hidden backdrop-blur-md shadow-2xl">
+      {/* 1. WIDOK NA DESKTOP (MD I WIĘKSZE EKRANY) - Oryginalna tabela */}
+      <div className="hidden md:block bg-white/5 border border-white/5 rounded-[32px] overflow-hidden backdrop-blur-md shadow-2xl">
         <table className="w-full text-left">
           <thead>
             <tr className="bg-white/5 text-[10px] uppercase text-gray-500 font-black tracking-widest">
@@ -205,7 +206,7 @@ export default function AdminBookings() {
                 </td>
 
                 {/* AKCJE DOPASOWANE DO ROLI */}
-                <td className="p-6 text-right space-x-2">
+                <td className="p-6 text-right space-x-2 whitespace-nowrap">
                   {role === 'boss' && (
                     <>
                       <button onClick={() => startEdit(b)} className="text-[9px] font-black uppercase text-blue-400 hover:bg-blue-400/10 px-3 py-2 rounded-lg transition-all border border-blue-400/20">Edytuj</button>
@@ -222,7 +223,93 @@ export default function AdminBookings() {
         </table>
       </div>
 
-      {/* MODAL EDYCJI (TYLKO SZEF) */}
+      {/* 2. WIDOK NA MOBILE (PONIŻEJ MD) - Układ kartowy bez ucinania */}
+      <div className="grid grid-cols-1 gap-6 md:hidden">
+        {bookings.map((b) => (
+          <div key={b.id} className="bg-white/5 border border-white/10 rounded-[28px] p-6 space-y-5 backdrop-blur-md shadow-xl flex flex-col justify-between">
+            <div className="space-y-4">
+              
+              {/* Klient i statusy */}
+              <div className="flex justify-between items-start gap-4">
+                <div>
+                  <p className="font-bold text-white uppercase text-base">{b.customer_name}</p>
+                  <p className="text-[10px] text-gray-500 font-mono italic break-words mt-0.5">{b.notes}</p>
+                </div>
+                <div className="flex flex-col gap-2 items-end">
+                  <span className={`text-[8px] md:text-[9px] font-black px-2.5 py-1 rounded-full border w-fit uppercase text-center ${
+                    b.status === 'confirmed' ? 'border-green-500/50 text-green-500 bg-green-500/10' : 
+                    b.status === 'cancelled' ? 'border-red-500/50 text-red-500 bg-red-500/10' : 'border-gray-500 text-gray-500'
+                  }`}>
+                    {b.status}
+                  </span>
+                  <button 
+                    onClick={() => togglePaymentStatus(b.id, b.payment_status)}
+                    className={`text-[8px] md:text-[9px] font-black px-2.5 py-1 rounded-full border uppercase transition-all w-fit text-center ${
+                      b.payment_status === 'paid' ? 'border-green-500/40 text-green-400 bg-green-500/10' : 'border-yellow-500/40 text-yellow-500 bg-yellow-500/10'
+                    }`}
+                  >
+                    {b.payment_status}
+                  </button>
+                </div>
+              </div>
+
+              {/* Informacje o terminie i torze */}
+              <div className="grid grid-cols-2 gap-4 bg-white/[0.02] border border-white/5 p-4 rounded-2xl text-xs">
+                <div>
+                  <p className="text-[9px] text-gray-500 uppercase font-black tracking-widest mb-0.5">Tor</p>
+                  <p className="text-yellow-500 font-black italic uppercase text-sm">TOR #{b.lanes?.number}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[9px] text-gray-500 uppercase font-black tracking-widest mb-0.5">Termin</p>
+                  <p className="font-bold text-white text-xs">{b.start_time.split('T')[0]}</p>
+                  <p className="text-[10px] text-gray-400 font-mono">{b.start_time.substring(11, 16)} - {b.end_time.substring(11, 16)}</p>
+                </div>
+              </div>
+
+              {/* Buty i zwrot */}
+              <div className="space-y-2">
+                <p className="text-[9px] text-gray-500 uppercase font-black tracking-widest">Buty i zwrot</p>
+                <div className="flex flex-col gap-2">
+                  {b.shoe_rentals && b.shoe_rentals.length > 0 ? (
+                    b.shoe_rentals.map((sr: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between bg-white/5 border border-white/10 px-4 py-2 rounded-2xl">
+                        <span className="text-[11px] font-bold text-gray-300">r.{Math.round(sr.shoe_inventory.size)} <span className="text-yellow-600 font-black">x{sr.quantity}</span></span>
+                        <button 
+                          onClick={() => markShoesReturned(sr.id, sr.returned)}
+                          className={`text-[9px] px-3 py-1.5 rounded-xl font-black uppercase border transition-all ${
+                            sr.returned ? 'bg-green-500/10 border-green-500/30 text-green-500' : 'bg-red-500/10 border-red-500/30 text-red-400'
+                          }`}
+                        >
+                          {sr.returned ? 'Zwrócone ✓' : 'Oddaj'}
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-[10px] text-gray-600 italic">Brak butów</span>
+                  )}
+                </div>
+              </div>
+
+            </div>
+
+            {/* AKCJE DOPASOWANE DO ROLI (Wygodne kafelki na telefonie) */}
+            <div className="border-t border-white/5 pt-4 flex flex-wrap gap-2 justify-end">
+              {role === 'boss' && (
+                <>
+                  <button onClick={() => startEdit(b)} className="text-[10px] font-black uppercase text-blue-400 hover:bg-blue-400/10 px-4 py-2.5 rounded-xl transition-all border border-blue-400/20 bg-blue-500/5">Edytuj</button>
+                  <button onClick={() => deleteBooking(b.id)} className="text-[10px] font-black uppercase text-red-500 hover:bg-red-500/10 px-4 py-2.5 rounded-xl transition-all border border-red-500/20 bg-red-500/5">Usuń</button>
+                </>
+              )}
+              {b.status !== 'cancelled' && (
+                <button onClick={() => cancelBooking(b.id)} className="text-[10px] font-black uppercase text-orange-400 hover:bg-orange-400/10 px-4 py-2.5 rounded-xl transition-all border border-orange-400/20 bg-orange-500/5">Anuluj</button>
+              )}
+            </div>
+
+          </div>
+        ))}
+      </div>
+
+      {/* MODAL EDYCJI (TYLKO SZEF) - Zostaje dokładnie taki sam */}
       {editing && role === 'boss' && (
         <div className="fixed inset-0 bg-black/95 backdrop-blur-xl flex items-center justify-center p-6 z-50 animate-in zoom-in duration-300">
           <div className="bg-[#0a0a0a] border border-gray-800 p-10 rounded-[40px] max-w-2xl w-full space-y-8 shadow-2xl overflow-y-auto max-h-[90vh]">
