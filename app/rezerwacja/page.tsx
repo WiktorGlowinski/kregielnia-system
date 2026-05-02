@@ -17,9 +17,27 @@ export default function BookingWizard() {
   const [appliedPromo, setAppliedPromo] = useState<any | null>(null);
   const [promoError, setPromoError] = useState('');
 
+  const todayObj = new Date();
+  const minDate = todayObj.toISOString().split('T')[0];
+
+  const maxDateObj = new Date();
+  maxDateObj.setMonth(maxDateObj.getMonth() + 1);
+  const maxDate = maxDateObj.toISOString().split('T')[0];
+
+  const allHours = ['12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00'];
+
+  const getInitialStartTime = () => {
+    const currentHour = new Date().getHours();
+    const validHoursForToday = allHours.filter(t => parseInt(t.split(':')[0]) > currentHour);
+    if (validHoursForToday.length > 0) {
+      return validHoursForToday[0];
+    }
+    return '18:00';
+  };
+
   const [booking, setBooking] = useState({
-    date: new Date().toISOString().split('T')[0],
-    startTime: '18:00',
+    date: minDate,
+    startTime: getInitialStartTime(),
     duration: 1,
     laneId: null as number | null,
     selectedLane: null as any,
@@ -51,7 +69,6 @@ export default function BookingWizard() {
       if (urlParams.get('success') === 'true') {
         const bId = urlParams.get('bookingId');
         if (bId) {
-          // Pobieramy dane z bookings na sukcesie - to zadziała, bo użytkownik ma ID rezerwacji
           const { data } = await supabase.from('bookings').select('*, lanes(number)').eq('id', bId).single();
           if (data) {
             setBooking(prev => ({
@@ -97,7 +114,6 @@ export default function BookingWizard() {
 
     setLoading(true);
     try {
-      // POPRAWKA: Pobieramy rezerwacje z widoku 'occupied_lanes', a nie z tabeli 'bookings'
       const { data, error } = await supabase
         .from('occupied_lanes')
         .select('lane_id, start_time, end_time')
@@ -235,6 +251,11 @@ export default function BookingWizard() {
     }
   };
 
+  const currentHour = new Date().getHours();
+  const availableHours = booking.date === minDate 
+    ? allHours.filter(t => parseInt(t.split(':')[0]) > currentHour)
+    : allHours;
+
   return (
     <main className="min-h-screen bg-[#050505] text-white p-4 font-sans text-center">
       <div className="max-w-3xl mx-auto border border-gray-900 rounded-[40px] p-8 bg-gray-900/10 backdrop-blur-md">
@@ -253,10 +274,46 @@ export default function BookingWizard() {
         {step === 1 && (
           <div className="space-y-6 animate-in fade-in duration-500 text-left text-center">
             <h2 className="text-3xl font-bold italic uppercase text-center">Termin</h2>
-            <div className="bg-black/40 p-6 rounded-3xl border border-gray-800">
-              <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 block tracking-widest">Dzień</label>
-              <input type="date" min={new Date().toISOString().split('T')[0]} className="w-full bg-transparent text-xl outline-none text-center" value={booking.date} onChange={e => setBooking({...booking, date: e.target.value})} />
+            
+            {/* KAFELEK DATY - Wygląda jak dawniej, ale reaguje na kliknięcie w dowolnym miejscu */}
+            <div 
+              onClick={(e) => {
+                const input = e.currentTarget.querySelector('input');
+                if (input && 'showPicker' in input) {
+                  try {
+                    input.showPicker();
+                  } catch (err) {
+                    input.focus();
+                  }
+                }
+              }}
+              className="bg-black/40 p-6 rounded-3xl border border-gray-800 hover:border-gray-700 transition-all cursor-pointer select-none"
+            >
+              <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 block tracking-widest text-center cursor-pointer">Dzień</label>
+              <input 
+                type="date" 
+                min={minDate} 
+                max={maxDate} 
+                onKeyDown={(e) => e.preventDefault()} /* Blokuje ręczne wpisywanie z klawiatury */
+                className="w-full bg-transparent text-xl outline-none text-center cursor-pointer [color-scheme:dark]" 
+                value={booking.date} 
+                onChange={e => {
+                  const newDate = e.target.value;
+                  let newStartTime = booking.startTime;
+                  
+                  if (newDate === minDate) {
+                    const selectedH = parseInt(newStartTime.split(':')[0]);
+                    if (selectedH <= currentHour) {
+                      const validHours = allHours.filter(t => parseInt(t.split(':')[0]) > currentHour);
+                      newStartTime = validHours.length > 0 ? validHours[0] : '12:00';
+                    }
+                  }
+                  
+                  setBooking({...booking, date: newDate, startTime: newStartTime});
+                }} 
+              />
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-black/40 p-6 rounded-3xl border border-gray-800 text-center">
                 <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 block tracking-widest">Start</label>
@@ -274,7 +331,11 @@ export default function BookingWizard() {
                     }));
                   }} 
                 >
-                  {['12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00'].map(t => (<option key={t} value={t} className="bg-black text-white">{t}</option>))}
+                  {availableHours.length > 0 ? (
+                    availableHours.map(t => (<option key={t} value={t} className="bg-black text-white">{t}</option>))
+                  ) : (
+                    <option className="bg-black text-red-400" disabled>Brak godzin</option>
+                  )}
                 </select>
               </div>
               <div className="bg-black/40 p-6 rounded-3xl border border-gray-800 text-center">
@@ -292,7 +353,13 @@ export default function BookingWizard() {
               </div>
             </div>
 
-            {!isTimeValid && (
+            {availableHours.length === 0 && booking.date === minDate && (
+              <p className="text-red-500 text-xs font-bold text-center animate-pulse">
+                ⚠️ Na dziś nie ma już wolnych godzin. Wybierz inny dzień!
+              </p>
+            )}
+
+            {!isTimeValid && availableHours.length > 0 && (
               <p className="text-red-500 text-xs font-bold text-center animate-pulse">
                 ⚠️ Przepraszamy, kręgielnia jest czynna tylko do 23:00!
               </p>
@@ -300,14 +367,14 @@ export default function BookingWizard() {
 
             <button 
               onClick={checkAvailability} 
-              disabled={loading || !isTimeValid} 
+              disabled={loading || !isTimeValid || availableHours.length === 0} 
               className={`w-full py-6 rounded-3xl font-black uppercase tracking-widest transition-all ${
-                !isTimeValid 
+                !isTimeValid || availableHours.length === 0
                   ? 'bg-gray-800 text-gray-600 cursor-not-allowed opacity-50' 
                   : 'bg-yellow-600 hover:bg-yellow-500 text-black'
               }`}
             >
-              {loading ? 'Sprawdzam...' : !isTimeValid ? 'Zmień godziny' : 'Wybierz tor'}
+              {loading ? 'Sprawdzam...' : !isTimeValid || availableHours.length === 0 ? 'Zmień godziny' : 'Wybierz tor'}
             </button>
           </div>
         )}
