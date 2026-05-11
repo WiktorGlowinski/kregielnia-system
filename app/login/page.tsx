@@ -12,7 +12,7 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setError('Błędne dane, kuzynie.');
+    if (error) setError('Błędne dane.');
     else router.push('/admin');
   };
 
